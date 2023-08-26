@@ -1,0 +1,72 @@
+[gd_scene load_steps=7 format=3 uid="uid://d2yobhxwt3aks"]
+
+[ext_resource type="Script" path="res://src/FileDialog.gd" id="2_00cju"]
+[ext_resource type="Script" path="res://src/binary_path_displayer.gd" id="3_w2m8i"]
+[ext_resource type="Script" path="res://src/load_button.gd" id="4_krign"]
+[ext_resource type="Script" path="res://src/frame_displayer.gd" id="5_xeoye"]
+[ext_resource type="Script" path="res://src/start_recording_button.gd" id="5_ynunq"]
+[ext_resource type="Script" path="res://src/stop_recording_button.gd" id="6_mcr35"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a Directory"
+initial_position = 5
+size = Vector2i(500, 500)
+ok_button_text = "Select Current Folder"
+file_mode = 2
+access = 2
+show_hidden_files = true
+script = ExtResource("2_00cju")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="BinaryPathDisplayer" type="Label" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Binary path: null"
+script = ExtResource("3_w2m8i")
+
+[node name="EditPathButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Edit FFmpeg binary path"
+
+[node name="LoadButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+text = "Load"
+script = ExtResource("4_krign")
+
+[node name="HBoxContainer2" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="FrameDisplayer" type="Label" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Frame: 0"
+script = ExtResource("5_xeoye")
+
+[node name="StartRecordingButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Start Recording"
+script = ExtResource("5_ynunq")
+
+[node name="StopRecordingButton" type="Button" parent="VBoxContainer/HBoxContainer2"]
+layout_mode = 2
+text = "Stop Recording"
+script = ExtResource("6_mcr35")
+
+[connection signal="dir_selected" from="FileDialog" to="FileDialog" method="_on_dir_selected"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/EditPathButton" to="FileDialog" method="_on_open_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer/LoadButton" to="VBoxContainer/HBoxContainer/LoadButton" method="_on_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/StartRecordingButton" to="VBoxContainer/HBoxContainer2/StartRecordingButton" method="_on_pressed"]
+[connection signal="pressed" from="VBoxContainer/HBoxContainer2/StopRecordingButton" to="VBoxContainer/HBoxContainer2/StopRecordingButton" method="_on_pressed"]
