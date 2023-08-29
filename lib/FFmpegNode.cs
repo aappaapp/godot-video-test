@@ -1,8 +1,8 @@
+using FFmpeg.AutoGen.Abstractions;
+using FFmpeg.AutoGen.Bindings.DynamicallyLoaded;
 using Godot;
-using FFmpeg.AutoGen;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System;
+using System.Runtime.InteropServices;
 
 
 namespace GodotFFmpegTest;
@@ -10,25 +10,27 @@ namespace GodotFFmpegTest;
 [GlobalClass]
 public unsafe partial class FFmpegNode : Node
 {
-	private AVFormatContext* context;
+	private VideoEncoder videoEncoder;
+
+	public FFmpegNode()
+	{
+	}
 
 	public void Initialize(string path)
 	{
-		ffmpeg.RootPath = path;
-		context = ffmpeg.avformat_alloc_context();
+		DynamicallyLoadedBindings.LibrariesPath = path;
+		DynamicallyLoadedBindings.Initialize();
+		videoEncoder = new VideoEncoder(1280, 720);
 	}
 
-	public void Add(byte[] buffer)
+	public void Add(Image image)
 	{
-		var frame = ffmpeg.av_frame_alloc();
-		var buf = ffmpeg.av_buffer_alloc((ulong)buffer.Length);
-		Marshal.Copy(buffer, 0, new IntPtr(buf->data), buffer.Length);
+		videoEncoder.SendImage(image);
 	}
 
-	public byte[] Combine()
+	public byte[] Get()
 	{
-		ffmpeg.avformat_free_context(context);
-		GD.Print(Marshal.PtrToStringUTF8(new IntPtr(context->video_codec->name)));
+		videoEncoder.Get();
 		return new byte[] { };
 	}
 }
