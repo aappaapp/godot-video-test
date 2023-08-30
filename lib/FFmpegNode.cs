@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 
 namespace GodotFFmpegTest;
 
-[GlobalClass]
 public unsafe partial class FFmpegNode : Node
 {
 	private VideoEncoder videoEncoder;
@@ -25,7 +24,7 @@ public unsafe partial class FFmpegNode : Node
 
 	public void Add(Image image)
 	{
-		videoEncoder.SendImage(image);
+		videoEncoder.Encode(image);
 	}
 
 	public byte[] Get()
