@@ -12,5 +12,12 @@ public unsafe class Stream : IDisposable
     Pointer = stream;
   }
 
+  public Stream(FormatContext format)
+  {
+    Pointer = ffmpeg.avformat_new_stream(format.Pointer, null);
+  }
+
+  public void A() { }
+
   public void Dispose() { }
 }

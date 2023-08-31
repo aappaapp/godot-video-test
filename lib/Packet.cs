@@ -12,6 +12,7 @@ public unsafe class Packet : IDisposable
     Pointer = ffmpeg.av_packet_alloc();
     if (Pointer == null)
       throw new Exception("Could not allocate AVPacket");
+    ffmpeg.av_new_packet(Pointer, 100);
   }
 
   public void Dispose()

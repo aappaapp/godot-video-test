@@ -9,7 +9,7 @@ namespace GodotFFmpegTest;
 public unsafe class VideoEncoder : IDisposable
 {
   public Encoder encoder = null;
-  public Format format = null;
+  public FormatContext format = null;
   public List<byte> data = new();
 
   public Frame frame;
@@ -25,9 +25,10 @@ public unsafe class VideoEncoder : IDisposable
     height = p_height;
     width = p_width;
 
-    encoder = new Encoder(p_width, p_height, 30);
-    format = new Format();
+    encoder = new(p_width, p_height, 30);
+    format = new();
     packet = new();
+    packet.Pointer->stream_index = 0;
     // Stream stream = format.NewStream();
     // stream.Pointer->id;
   }
@@ -53,8 +54,7 @@ public unsafe class VideoEncoder : IDisposable
         throw new Exception("Error during encoding");
 
 
-      GD.Print(packet.Pointer->duration);
-      // format.InterleavedWriteFrame(packet);
+      format.InterleavedWriteFrame(packet);
     }
   }
 

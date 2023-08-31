@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 
 namespace FFmpeg.Wrapper;
 
-public unsafe class Format : IDisposable
+public unsafe class FormatContext : IDisposable
 {
   public AVFormatContext* Pointer;
 
-  public Format()
+  public FormatContext()
   {
     int ret;
 
