@@ -29,7 +29,7 @@ public unsafe partial class FFmpegNode : Node
 
 	public byte[] Get()
 	{
-		videoEncoder.Get();
-		return new byte[] { };
+		using (videoEncoder)
+			return videoEncoder.Get();
 	}
 }

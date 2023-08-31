@@ -8,43 +8,90 @@ public unsafe class Frame : IDisposable
 {
   public AVFrame* Pointer;
 
-  public Frame(Image image)
+  public int Height { get { return Pointer->height; } }
+  public int Width { get { return Pointer->width; } }
+
+  public Frame(AVFrame* frame)
+  {
+    Pointer = frame;
+  }
+
+  public Frame(int width, int height, byte_ptr8 data = new())
+  {
+    Pointer = ffmpeg.av_frame_alloc();
+    Pointer->format = (int)AVPixelFormat.AV_PIX_FMT_RGB24;
+    Pointer->height = height;
+    Pointer->width = width;
+    Pointer->data = data;
+  }
+
+  public Frame ToYUV()
   {
     int ret;
 
-    Pointer = ffmpeg.av_frame_alloc();
-    Pointer->format = (int)AVPixelFormat.AV_PIX_FMT_YUV420P;
-    Pointer->height = image.GetHeight();
-    Pointer->width = image.GetWidth();
+    Frame yuvFrame = Clone();
+    yuvFrame.Pointer->format = (int)AVPixelFormat.AV_PIX_FMT_YUV420P;
+    yuvFrame.GetBuffer();
+    yuvFrame.MakeWritable();
 
-    ret = ffmpeg.av_frame_get_buffer(Pointer, 0);
+    SwsContext* swsContext = ffmpeg.sws_getContext(Width, Height, AVPixelFormat.AV_PIX_FMT_RGB24, Width, Height, AVPixelFormat.AV_PIX_FMT_YUV420P, 0, null, null, null);
+
+    ret = ffmpeg.sws_scale(swsContext, Pointer->data, Pointer->linesize, 0, Height, yuvFrame.Pointer->data, yuvFrame.Pointer->linesize);
     if (ret < 0)
-      throw new Exception("Could not allocate the video frame data");
+      throw new Exception(ret.ToString());
 
-    ret = ffmpeg.av_frame_make_writable(Pointer);
-    if (ret < 0)
-      throw new Exception();
+    Dispose();
 
-    for (int y = 0; y < image.GetHeight(); y++)
-    {
-      for (int x = 0; x < image.GetWidth(); x++)
-      {
-        Pointer->data[0][x * 3 + y * Pointer->linesize[0]] = (byte)image.GetPixel(x, y).R8;
-        Pointer->data[0][x * 3 + y * Pointer->linesize[0] + 1] = (byte)image.GetPixel(x, y).G8;
-        Pointer->data[0][x * 3 + y * Pointer->linesize[0] + 2] = (byte)image.GetPixel(x, y).B8;
-      }
-    }
+    return yuvFrame;
+  }
 
-    AVFrame* Pointer2 = ffmpeg.av_frame_alloc();
-
-    SwsContext* swsContext = ffmpeg.sws_getContext(image.GetWidth(), image.GetHeight(), (AVPixelFormat)Pointer->format, image.GetWidth(), image.GetHeight(), AVPixelFormat.AV_PIX_FMT_YUV420P, 0, null, null, null);
-    ffmpeg.sws_scale(swsContext, Pointer->data, Pointer->linesize, 0, Pointer2->height, Pointer2->data, Pointer2->linesize);
-    Pointer = Pointer2;
+  public Frame Clone()
+  {
+    return new(Width, Height);
   }
 
   public void Dispose()
   {
+    Free();
+  }
+
+  public void Free()
+  {
     fixed (AVFrame** p_Pointer = &Pointer)
       ffmpeg.av_frame_free(p_Pointer);
+  }
+
+  public void GetBuffer()
+  {
+    int ret = ffmpeg.av_frame_get_buffer(Pointer, 0);
+    if (ret < 0)
+      throw new Exception("Could not allocate the video frame data");
+  }
+
+  public void MakeWritable()
+  {
+    int ret = ffmpeg.av_frame_make_writable(Pointer);
+    if (ret < 0)
+      throw new Exception();
+  }
+
+  public static Frame FromGodotImage(Image image)
+  {
+    using Frame frame = new(image.GetWidth(), image.GetHeight());
+
+    frame.GetBuffer();
+    frame.MakeWritable();
+
+    for (int y = 0; y < frame.Height; y++)
+    {
+      for (int x = 0; x < frame.Width; x++)
+      {
+        frame.Pointer->data[0][x * 3 + y * frame.Pointer->linesize[0]] = (byte)image.GetPixel(x, y).R8;
+        frame.Pointer->data[0][x * 3 + y * frame.Pointer->linesize[0] + 1] = (byte)image.GetPixel(x, y).G8;
+        frame.Pointer->data[0][x * 3 + y * frame.Pointer->linesize[0] + 2] = (byte)image.GetPixel(x, y).B8;
+      }
+    }
+
+    return frame.ToYUV();
   }
 }

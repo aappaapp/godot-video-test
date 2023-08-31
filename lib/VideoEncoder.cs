@@ -1,5 +1,5 @@
 using System;
-using System.Reflection.Metadata.Ecma335;
+using System.Collections.Generic;
 using FFmpeg.AutoGen.Abstractions;
 using FFmpeg.Wrapper;
 using Godot;
@@ -8,48 +8,63 @@ namespace GodotFFmpegTest;
 
 public unsafe class VideoEncoder : IDisposable
 {
-  public Encoder Encoder = null;
+  public Encoder encoder = null;
+  public Format format = null;
+  public List<byte> data = new();
+
+  public Frame frame;
+  public Packet packet;
 
   public int width;
   public int height;
+
+  private int pts = 0;
 
   public VideoEncoder(int p_width, int p_height)
   {
     height = p_height;
     width = p_width;
 
-    Encoder = new Encoder(p_width, p_height, 30);
+    encoder = new Encoder(p_width, p_height, 30);
+    format = new Format();
+    packet = new();
+    // Stream stream = format.NewStream();
+    // stream.Pointer->id;
   }
 
   public void Encode(Image image)
   {
     int ret;
-    Frame frame = new(image);
-    Packet packet = new();
+    frame = Frame.FromGodotImage(image);
 
-    ret = Encoder.SendFrame(frame);
+    frame.Pointer->pts = pts++;
+
+    ret = encoder.SendFrame(frame);
     if (ret < 0)
       throw new Exception($"Error sending a frame for encoding: {ret}");
 
     while (ret >= 0)
     {
-      ret = Encoder.RecievePacket(packet);
+      ret = encoder.RecievePacket(packet);
+
       if (ret == ffmpeg.AVERROR(ffmpeg.EAGAIN) || ret == ffmpeg.AVERROR_EOF)
         return;
       else if (ret < 0)
         throw new Exception("Error during encoding");
-      GD.Print("Write!");
-      packet.UnRef();
+
+
+      GD.Print(packet.Pointer->duration);
+      // format.InterleavedWriteFrame(packet);
     }
   }
 
-  public void Get()
+  public byte[] Get()
   {
-    // Encoder.RecievePacket
+    return data.ToArray();
   }
 
   public void Dispose()
   {
-    Encoder.Dispose();
+    encoder.Dispose();
   }
 }
