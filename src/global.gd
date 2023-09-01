@@ -7,6 +7,6 @@ var ffmpeg_path: String = ""
 
 func _process(_delta) -> void:
 	if is_recording:
-		var a = get_viewport().get_texture().get_image()
-		FFmpeg.Add(a)
+		var image = get_viewport().get_texture().get_image()
+		FFmpeg.Encode(image)
 		frame += 1

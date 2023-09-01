@@ -1,9 +1,6 @@
-using FFmpeg.AutoGen.Abstractions;
+using FFmpeg.AdvanceWrapper;
 using FFmpeg.AutoGen.Bindings.DynamicallyLoaded;
 using Godot;
-using System;
-using System.Runtime.InteropServices;
-
 
 namespace GodotFFmpegTest;
 
@@ -15,21 +12,15 @@ public unsafe partial class FFmpegNode : Node
 	{
 	}
 
-	public void Initialize(string path)
+	public void Initialize(string p_libraryPath)
 	{
-		DynamicallyLoadedBindings.LibrariesPath = path;
+		DynamicallyLoadedBindings.LibrariesPath = p_libraryPath;
 		DynamicallyLoadedBindings.Initialize();
-		videoEncoder = new VideoEncoder(1280, 720);
+		videoEncoder = new(1280, 720);
 	}
 
-	public void Add(Image image)
+	public void Encode(Image p_image)
 	{
-		videoEncoder.Encode(image);
-	}
-
-	public byte[] Get()
-	{
-		using (videoEncoder)
-			return videoEncoder.Get();
+		videoEncoder.Encode(p_image.ToAVFrame());
 	}
 }
