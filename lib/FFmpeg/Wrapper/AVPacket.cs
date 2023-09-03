@@ -6,6 +6,8 @@ public unsafe class AVPacket
 {
   public AutoGen.Abstractions.AVPacket* Pointer;
 
+  public int StreamIndex { get => Pointer->stream_index; set => Pointer->stream_index = value; }
+
   public AVPacket(AutoGen.Abstractions.AVPacket* p_pointer)
   {
     Pointer = p_pointer;
@@ -15,6 +17,11 @@ public unsafe class AVPacket
   {
     fixed (AutoGen.Abstractions.AVPacket** ptr_Pointer = &Pointer)
       ffmpeg.av_packet_free(ptr_Pointer);
+  }
+
+  public void UnRef()
+  {
+    ffmpeg.av_packet_unref(Pointer);
   }
 
   public static AVPacket Alloc()

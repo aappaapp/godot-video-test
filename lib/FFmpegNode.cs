@@ -23,4 +23,10 @@ public unsafe partial class FFmpegNode : Node
 	{
 		videoEncoder.Encode(p_image.ToAVFrame());
 	}
+
+
+	public byte[] GetBytes()
+	{
+		return videoEncoder.bytes.ToArray();
+	}
 }

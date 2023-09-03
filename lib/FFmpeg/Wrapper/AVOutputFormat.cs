@@ -2,7 +2,7 @@ using FFmpeg.AutoGen.Abstractions;
 
 namespace FFmpeg.Wrapper;
 
-public unsafe class AVOutputFormat
+public unsafe struct AVOutputFormat
 {
   public AutoGen.Abstractions.AVOutputFormat* Pointer;
 
